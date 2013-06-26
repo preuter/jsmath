@@ -328,8 +328,9 @@ Matrix.prototype.add = function(/*Matrix|number*/ B) {
     B = new Matrix(A.size(),+B);
   }
 
-  var sA = A.size();
-  if( sA != B.size() ) {
+  var sA = this.size();
+  var sB = B.size();
+  if( sA[0]!=sB[0] || sA[1]!=sB[1] ) { 
     return null;
   }
 
@@ -348,8 +349,9 @@ Matrix.prototype.sub = function(/*Matrix|number*/ B) {
     B = new Matrix(A.size(),+B);
   }
 
-  var sA = A.size();
-  if( sA != B.size() ) {
+  var sA = this.size();
+  var sB = B.size();
+  if( sA[0]!=sB[0] || sA[1]!=sB[1] ) { 
     return null;
   }
 
@@ -401,7 +403,7 @@ Matrix.prototype.cross = function(/*Matrix*/ B) {
     return null;
   }
 
-  var C = Matriz.zeros(sA[0],sB[1]);
+  var C = Matrix.zeros(sA[0],sB[1]);
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sB[1]; j<nj; j++) { 
       for(var k=0, nk=sB[0]; k<nk; k++) { 
@@ -420,7 +422,7 @@ Matrix.prototype.dot = function(/*Matrix*/ B) {
 
   var sA = this.size();
   var sB = B.size();
-  if( sA != sB ) {
+  if( sA[0]!=sB[0] || sA[1]!=sB[1] ) { 
     return null;
   }
 
@@ -441,7 +443,7 @@ Matrix.prototype.div = function(/*Matrix*/ B) {
 
   var sA = this.size();
   var sB = B.size();
-  if( sA != sB ) {
+  if( sA[0]!=sB[0] || sA[1]!=sB[1] ) { 
     return null;
   }
 
@@ -455,18 +457,13 @@ Matrix.prototype.div = function(/*Matrix*/ B) {
 };
 
 
-Matrix.prototype.isSquare = function() { 
-  var sA = this.size();
-  return (sA[0]==sA[1]);
-};
-
-
 Matrix.prototype.det = function() {
   var n = (this.size())[0],
     det = 0,
     sig = 1;
 
-  if( !this.isSquare() ) { 
+  var sA = this.size();
+  if( sA[0]!=sA[1] ) { 
     return false;
   }
   if( n == 1 ) { 
@@ -496,6 +493,9 @@ Matrix.prototype.det = function() {
 
 
 Matrix.diag = function(v) {
+  if( Matrix.isMatrix(v) ) { 
+    return v.diag();
+  }
   if( !Array.isArray(v) ) { 
     v = [v];
   }
@@ -519,7 +519,8 @@ Matrix.prototype.diag = function() {
 
 
 Matrix.prototype.inv = function() {
-  if( !this.isSquare() ) { 
+  var sA = this.size();
+  if( sA[0]!=sA[1] ) {
     return null;
   }
   var sA = this.size();
@@ -1064,9 +1065,16 @@ Matrix.prototype.size = function() {
 
 
 /** DEBUG **/
+var A = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
+var B = Matrix.pow(A,3).add(42);
+//console.log(A);
+console.log(B);
+process.exit();
 var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
-var i = Matrix.pow(M,-1);
-console.log(i);
+var inv = M.pinv();
+console.log(inv);
 //var SVD = M.svd();
-//console.log(SVD);
-
+//console.log(SVD[0]);
+//console.log(SVD[1]);
+//console.log(SVD[2]);
+//console.log(Matrix.diag(SVD[1]));
