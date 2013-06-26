@@ -185,7 +185,7 @@ Matrix.pow = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
 };
 Matrix.prototype.pow = function(/*Matrix|number*/ B) { 
   if( !Matrix.isMatrix(B) ) { 
-    B = new Matrix(A.size(),B);
+    B = new Matrix(this.size(),B);
   }
   return this.each(function(v,i,j) { 
     return (Matrix.isZero(v)) ? 0 : Math.pow(v,B.data[i][j]); 
@@ -233,7 +233,15 @@ Matrix.prototype.roundoff = function(ep) {
     var va = Math.round(v);
     return (Matrix.isZero(va-v,ep)) ? va : v;
   });
-};  
+};
+
+
+Matrix.prototype.format = function(n) { 
+  n = Math.pow(10,Math.max(1,n));
+  return this.each(function(v,i,j) { 
+    return Math.round(v*n)/n;
+  });
+};
 
 
 Matrix.dot = function(/*Matrix|number*/ A, /*Matrix|number*/ B) { 
@@ -1150,7 +1158,14 @@ Matrix.prototype.size = function() {
 
 
 /** DEBUG **/
+var M = new Matrix([ [1,0,0,2],[4,0,3,1],[4,0,1,0],[3,4,1,7] ]);
+console.log(M.inv().format(3));
+console.log(M.pinv().format(3));
+process.exit();
 var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
+console.log(M.inv());
+console.log(M.pinv());
+process.exit();
 var svd = M.svd();
 console.log(svd[0].roundoff());
 console.log(Matrix.diag(svd[1]));
