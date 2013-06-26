@@ -42,8 +42,9 @@ Matrix.isNaN = function(/*number*/ value) {
 };
 
 
-Matrix.isZero = function(/*number*/ value) {
-  return (-0.0000001 < value && value < 0.0000001);
+Matrix.isZero = function(/*number*/ value,ep) {
+  ep = ep || 0.0000001;
+  return (-ep < value && value < ep);
 };
 
 
@@ -140,12 +141,26 @@ Matrix.pow = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
     return (Matrix.isZero(v)) ? 0 : Math.pow(v,B.data[i][j]); 
   });
 };
+Matrix.prototype.pow = function(/*Matrix|number*/ B) { 
+  if( !Matrix.isMatrix(B) ) { 
+    B = new Matrix(A.size(),B);
+  }
+  return this.each(function(v,i,j) { 
+    return (Matrix.isZero(v)) ? 0 : Math.pow(v,B.data[i][j]); 
+  });
+};
+
 Matrix.random = function(/*Matrix|number*/ A) {
   return (Matrix.isMatrix(A)) ? A.map(Math.random) : Math.random(A);
 };
+
 Matrix.round = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.round) : Math.round(A);
 };
+Matrix.prototype.round = function() { 
+  return this.map(Math.round);
+};
+
 Matrix.sin = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.sin) : Math.sin(A);
 };
@@ -155,6 +170,13 @@ Matrix.sqrt = function(/*Matrix|number*/ A) {
 Matrix.tan = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.tan) : Math.tan(A);
 };
+
+Matrix.prototype.roundoff = function(ep) {
+  return this.each(function(v,i,j) { 
+    var va = Math.round(v);
+    return (Matrix.isZero(va-v,ep)) ? va : v;
+  });
+};  
 
 
 Matrix.dot = function(/*Matrix|number*/ A, /*Matrix|number*/ B) { 
@@ -533,9 +555,9 @@ Matrix.prototype.inv = function() {
     return null;
   }
   var sA = this.size();
-  var B = this.join(Matrix.eye(sA[0])).reduce();
+  var B = this.hcat(Matrix.eye(sA[0])).reduce();
   if( B !== 0 ) {
-    return (B.split(sA[0]))[1];
+    return (B.hsplit(sA[0]))[1];
   }
   return null;
 };
@@ -871,7 +893,7 @@ Matrix.prototype.svd = function() {
 
 Matrix.prototype.pinv = function() { 
   var uwv = this.svd();
-  return uwv[2].cross(Matrix.pow(Matrix.diag(uwv[1]),-1).T()).cross(uwv[0].T());
+  return uwv[2].cross(Matrix.diag(uwv[1]).pow(-1).T()).cross(uwv[0].T());
 };
 
 
@@ -963,8 +985,7 @@ Matrix.prototype.removeRow = function(/*uint*/ ri) {
   return this;
 };
 
-
-Matrix.prototype.join = function(/*Matrix*/ m) {
+Matrix.prototype.hcat = function(/*Matrix*/ m) {
 // TODO: support multiple Matricies as arguments.
   if( Matrix.isMatrix(m) ) { 
     m = m.get();
@@ -991,7 +1012,7 @@ Matrix.prototype.join = function(/*Matrix*/ m) {
 };
 
 
-Matrix.prototype.split = function(/*uint*/ cix) {
+Matrix.prototype.hsplit = function(/*uint*/ cix) {
 // TODO: support multiple indicies as arguments.
   var A = new Matrix(), B = new Matrix();
   var sA = this.size();
@@ -1071,17 +1092,10 @@ Matrix.prototype.size = function() {
 
 
 
-
-
 /** DEBUG **/
 var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
-var B = Matrix.random(M).add(-0.5);
-console.log(B);
-process.exit();
-var inv = M.pinv();
-console.log(inv);
-//var SVD = M.svd();
-//console.log(SVD[0]);
-//console.log(SVD[1]);
-//console.log(SVD[2]);
-//console.log(Matrix.diag(SVD[1]));
+var svd = M.svd();
+console.log(svd[0].roundoff());
+console.log(Matrix.diag(svd[1]));
+console.log(svd[2]);
+
