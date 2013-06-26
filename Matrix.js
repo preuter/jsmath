@@ -16,7 +16,7 @@
  * @see init
  */
 function Matrix(/*Matrix|array|uint*/ m, /*mixed|uint*/ n, /*mixed*/ v) {
-  this.rows = [];
+  this.data = [];
   if( typeof(m) !== 'undefined' ) { 
     this.init(m,n,v);
   }
@@ -50,7 +50,7 @@ Matrix.isZero = function(/*number*/ value) {
 // TODO: What's the diff between map and each?
 Matrix.prototype.map = function(/*function*/ cb) {
   var B = new Matrix(this);
-  B.rows = B.rows.map(function(r) { return r.map(cb); });
+  B.data = B.data.map(function(r) { return r.map(cb); });
   return B;
 };
 
@@ -61,7 +61,7 @@ Matrix.prototype.each = function(/*function(v,i,j)*/ cb) {
   var sA = A.size();
   for(var i=0,j=0,ni=sA[0],nj=sA[1]; i<ni; i++) {
     for(j=0; j<nj; j++) {
-      A.rows[i][j] = cb.call(this,this.rows[i][j],i,j);
+      A.data[i][j] = cb.call(this,this.data[i][j],i,j);
     }
   }
   return A;
@@ -89,7 +89,7 @@ Matrix.atan2 = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
   } else if( !Matrix.isMatrix(B) ) { 
     B = new Matrix(A.size(),B);
   }
-  return A.each(function(v,i,j) { return Math.atan2(v,B.rows[i][j]); });
+  return A.each(function(v,i,j) { return Math.atan2(v,B.data[i][j]); });
 };
 Matrix.ceil = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.ceil) : Math.ceil(A);
@@ -106,18 +106,27 @@ Matrix.floor = function(/*Matrix|number*/ A) {
 Matrix.log = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.log) : Math.log(A);
 };
+
 Matrix.max = function(/*Matrix|number*/ A) { 
   if( Matrix.isMatrix(A) ) {
-    return Math.max.apply(Math,A.rows.slice(0).map(function(r) { return Math.max.apply(Math,r); }));
+    return Math.max.apply(Math,A.data.slice(0).map(function(r) { return Math.max.apply(Math,r); }));
   }
   return Math.max.apply(Math,Array.prototype.slice.call(arguments));
 };
+Matrix.prototype.max = function() { 
+  return Math.max.apply(Math,this.data.slice(0).map(function(r) { return Math.max.apply(Math,r); }));
+};
+
 Matrix.min = function(/*Matrix|number*/ A) { 
   if( Matrix.isMatrix(A) ) { 
-    return Math.min.apply(Math,A.rows.slice(0).map(function(r) { return Math.min.apply(Math,r); }));
+    return Math.min.apply(Math,A.data.slice(0).map(function(r) { return Math.min.apply(Math,r); }));
   }
   return Math.min.apply(Math,Array.prototype.slice.call(arguments));
 };
+Matrix.prototype.min = function() { 
+  return Math.min.apply(Math,this.data.slice(0).map(function(r) { return Math.min.apply(Math,r); }));
+};
+
 Matrix.pow = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
   if( !Matrix.isMatrix(A) ) { 
     if( !Matrix.isMatrix(B) ) { 
@@ -128,7 +137,7 @@ Matrix.pow = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
     B = new Matrix(A.size(),B);
   }
   return A.each(function(v,i,j) { 
-    return (Matrix.isZero(v)) ? 0 : Math.pow(v,B.rows[i][j]); 
+    return (Matrix.isZero(v)) ? 0 : Math.pow(v,B.data[i][j]); 
   });
 };
 Matrix.random = function(/*Matrix|number*/ A) {
@@ -249,8 +258,8 @@ Matrix.prototype.replace = function(f,r) {
   var sA = A.size();
   for(var i=0,j=0,ni=sA[0],nj=sA[1]; i<ni; i++) { 
     for(j=0; j<nj; j++) { 
-      if( A.rows[i][j] === f ) { 
-        A.rows[i][j] = r;
+      if( A.data[i][j] === f ) { 
+        A.data[i][j] = r;
       }
     }
   }
@@ -278,7 +287,7 @@ Matrix.prototype.init = function(/*Matrix|array|uint*/ m, /*uint|value*/ n, /*va
         } else { 
         // convert column-array to Matrix
           for(var i=0,n=m.length;i<n;i++) { 
-            this.rows[i] = m[i];
+            this.data[i] = m[i];
           }
         }
       } else { 
@@ -301,11 +310,11 @@ Matrix.prototype.init = function(/*Matrix|array|uint*/ m, /*uint|value*/ n, /*va
     }
   }
   if( m>0 && n>0 ) { 
-    this.rows = [];
+    this.data = [];
     for(var i=0,j=0; i<m; i++) {
-      this.rows[i] = [];
+      this.data[i] = [];
       for(j=0; j<n; j++) { 
-        this.rows[i][j] = v;
+        this.data[i][j] = v;
       }
     }
   }
@@ -317,7 +326,7 @@ Matrix.prototype.copy = function(/*Matrix|array*/ other) {
   if( Matrix.isMatrix(other) ) { 
     other = other.get();
   }
-  this.rows = other.slice(0).map(function(r) { return r.slice(0); });
+  this.data = other.slice(0).map(function(r) { return r.slice(0); });
   return this;
 };
 
@@ -336,7 +345,7 @@ Matrix.prototype.add = function(/*Matrix|number*/ B) {
 
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sA[1]; j<nj; j++) {
-      A.rows[i][j] += B.rows[i][j];
+      A.data[i][j] += B.data[i][j];
     }
   }
   return A;
@@ -357,7 +366,7 @@ Matrix.prototype.sub = function(/*Matrix|number*/ B) {
 
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sA[1]; j<nj; j++) {
-      A.rows[i][j] -= B.rows[i][j];
+      A.data[i][j] -= B.data[i][j];
     }
   }
   return A;
@@ -374,7 +383,7 @@ Matrix.prototype.find = function(/*optional bool function*/ test) {
 
   for(var r=0,c=0,nr=sA[0],nc=sA[1]; r<nr; r++) { 
     for(c=0; c<nc; c++) { 
-      B.rows[r][c] = (test(this.rows[r][c])) ? 1 : 0;
+      B.data[r][c] = (test(this.data[r][c])) ? 1 : 0;
     }
   }
   return B;
@@ -388,7 +397,7 @@ Matrix.prototype.T = function() {
   
   for(var i=0,ni=sA[0],nj=sA[1]; i<ni; i++) { 
     for(var j=0; j<nj; j++) { 
-      B.rows[j][i] = this.rows[i][j];
+      B.data[j][i] = this.data[i][j];
     }
   }
   return B;
@@ -407,7 +416,7 @@ Matrix.prototype.cross = function(/*Matrix*/ B) {
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sB[1]; j<nj; j++) { 
       for(var k=0, nk=sB[0]; k<nk; k++) { 
-        C.rows[i][j] += this.rows[i][k] * B.rows[k][j];
+        C.data[i][j] += this.data[i][k] * B.data[k][j];
       }
     }
   }
@@ -429,7 +438,7 @@ Matrix.prototype.dot = function(/*Matrix*/ B) {
   var C = new Matrix(this);
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sA[1]; j<nj; j++) { 
-      C.rows[i][j] *= B.rows[i][j];
+      C.data[i][j] *= B.data[i][j];
     }
   }
   return C;
@@ -450,7 +459,7 @@ Matrix.prototype.div = function(/*Matrix*/ B) {
   var C = new Matrix(this);
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sA[1]; j<nj; j++) {
-      C.rows[i][j] = (Matrix.isZero(B.rows[i][j])) ? Matrix.NaN : C.rows[i][j]/B.rows[i][j];
+      C.data[i][j] = (Matrix.isZero(B.data[i][j])) ? Matrix.NaN : C.data[i][j]/B.data[i][j];
     }
   }
   return C;
@@ -467,20 +476,20 @@ Matrix.prototype.det = function() {
     return false;
   }
   if( n == 1 ) { 
-    return this.rows[0][0];
+    return this.data[0][0];
   }
   if( n == 2 ) { 
-    return this.rows[0][0]*this.rows[1][1] - this.rows[0][1]*this.rows[1][0];
+    return this.data[0][0]*this.data[1][1] - this.data[0][1]*this.data[1][0];
   }
 
-  for(var r in this.rows) {
-    var col = this.rows[0][r];
+  for(var r in this.data) {
+    var col = this.data[0][r];
     var B = new Matrix();
     for(var i=1; i<n; i++) { 
       var row = [];
       for(var j=0; j<n; j++) { 
         if( j!==col ) { 
-          row.push(this.rows[i][j]);
+          row.push(this.data[i][j]);
         }
       }
       B.insertRow(row);
@@ -502,7 +511,7 @@ Matrix.diag = function(v) {
   var n = v.length;
   var B = new Matrix(n,n,0);
   for(var i=0; i<n; i++) { 
-    B.rows[i][i] = v[i];
+    B.data[i][i] = v[i];
   }
   return B;
 };
@@ -512,7 +521,7 @@ Matrix.prototype.diag = function() {
   var b = [];
   var sA = this.size();
   for(var i=0,ni=Math.min(sA[0],sA[1]); i<ni; i++) { 
-    b.push(this.rows[i][i]);
+    b.push(this.data[i][i]);
   }
   return b;
 };
@@ -540,7 +549,7 @@ Matrix.prototype.reduce = function() {
     var r = i, isZ = 1;
     
     while( r<ni ) { 
-      if( !Matrix.isZero(B.rows[r][i]) ) { 
+      if( !Matrix.isZero(B.data[r][i]) ) { 
         isZ = 0;
         break;
       }
@@ -551,29 +560,29 @@ Matrix.prototype.reduce = function() {
       return 0;
     }
     if( r > i ) { 
-      var tmp = B.rows[i].slice(0);
-      B.rows[i] = B.rows[r];
-      B.rows[r] = tmp;
+      var tmp = B.data[i].slice(0);
+      B.data[i] = B.data[r];
+      B.data[r] = tmp;
     }
 
-    coeff = B.rows[i][i];
+    coeff = B.data[i][i];
     for(var j=i; j<nj; j++) { 
-      B.rows[i][j] /= coeff;
+      B.data[i][j] /= coeff;
     }
 
     for(r=i+1; r<ni; r++) { 
-      factor = B.rows[r][i];
+      factor = B.data[r][i];
       for(var j=0; j<nj; j++) { 
-        B.rows[r][j] -= factor*B.rows[i][j];
+        B.data[r][j] -= factor*B.data[i][j];
       }
     }
   }
   
   for(var elim=ni-1; elim>0; elim--) { 
     for(var row=elim-1; row>=0; row--) { 
-      var coeff = B.rows[row][elim];
+      var coeff = B.data[row][elim];
       for(var j=0; j<nj; j++) { 
-        B.rows[row][j] -= coeff*B.rows[elim][j];
+        B.data[row][j] -= coeff*B.data[elim][j];
       }
     }
   }
@@ -600,8 +609,8 @@ Matrix.prototype.svd = function() {
     return (Matrix.isZero(aa)) ? 0 : ab*Math.sqrt(1+SQR(aa/ab));
   };
 
-  var a = U.rows, // pointer to destination U (also input)
-      v = V.rows; // pointer to destination V
+  var a = U.data, // pointer to destination U (also input)
+      v = V.data; // pointer to destination V
 
   var flag,i,its,j,jj,k,l,mn;
   var anorm,c,f,g,h,s,scale,x,y,z;
@@ -879,13 +888,13 @@ Matrix.prototype.solve = function(b) {
  */ 
 Matrix.prototype.get = function(/*uint*/ ri, /*uint*/ ci) {
   if( typeof ri === 'undefined' ) { 
-    return this.rows;
+    return this.data;
   }
   var sA = this.size();
   if( typeof ci === 'undefined' ) {
-    return (sA[0]>ri) ? this.rows[ri] : null;
+    return (sA[0]>ri) ? this.data[ri] : null;
   }
-  return (sA[0]>ri && sA[1]>ci) ? this.rows[ri][ci] : null;
+  return (sA[0]>ri && sA[1]>ci) ? this.data[ri][ci] : null;
 };
 
 
@@ -894,20 +903,20 @@ Matrix.prototype.set = function(/*uint*/ ri, /*uint*/ ci,/*value*/ v) {
   if( sA[0] <= ri || sA[1] <= ci ) { 
     return false;
   }
-  this.rows[ri][ci] = v;
+  this.data[ri][ci] = v;
   return this;
 };
 
 
 Matrix.prototype.row = function(/*uint*/ rix) {
-  return this.rows[rix].slice(0);
+  return this.data[rix].slice(0);
 };
 
 
 Matrix.prototype.col = function(/*uint*/ cix) {
   var arr = [];
-  for(var i in this.rows) { 
-    arr.push(this.rows[i][cix]);
+  for(var i in this.data) { 
+    arr.push(this.data[i][cix]);
   }
   return arr;
 };
@@ -915,7 +924,7 @@ Matrix.prototype.col = function(/*uint*/ cix) {
 
 Matrix.prototype.toString = function() {
   return '('+this.size().join(',')+'): '+
-    '['+this.rows.map(function(v) { return '['+v.join(',')+']'; })+']';
+    '['+this.data.map(function(v) { return '['+v.join(',')+']'; })+']';
 };
 
 
@@ -935,8 +944,8 @@ Matrix.prototype.insertRow = function(/*array*/ row,/*uint*/ ri) {
       ri += sA[0];
     }
   }
-  this.rows.splice(ri,0,'TODO');
-  this.rows[ri] = row;
+  this.data.splice(ri,0,'TODO');
+  this.data[ri] = row;
   return this;
 };
 
@@ -950,7 +959,7 @@ Matrix.prototype.removeRow = function(/*uint*/ ri) {
       ri += sA[0];
     }
   }
-  this.rows.splice(ri,1);
+  this.data.splice(ri,1);
   return this;
 };
 
@@ -969,13 +978,13 @@ Matrix.prototype.join = function(/*Matrix*/ m) {
   var C = new Matrix(Math.max(sA[0],sB[0]),sA[1]+sB[1],0);
   for(var i=0,ni=sA[0],nj=sA[1]; i<ni; i++) { 
     for(var j=0; j<nj; j++) { 
-      C.rows[i][j] = this.rows[i][j];
+      C.data[i][j] = this.data[i][j];
     }
   }
   var nc = sA[1];
   for(var i=0,ni=sB[0],nj=sB[1]; i<ni; i++) { 
     for(var j=0; j<nj; j++) { 
-      C.rows[i][nc+j] = m[i][j];
+      C.data[i][nc+j] = m[i][j];
     }
   }
   return C;
@@ -987,8 +996,8 @@ Matrix.prototype.split = function(/*uint*/ cix) {
   var A = new Matrix(), B = new Matrix();
   var sA = this.size();
   for(var i=0,ni=sA[0]; i<ni; i++) {
-    A.rows.push( this.rows[i].slice(0,cix) );
-    B.rows.push( this.rows[i].slice(cix) );
+    A.data.push( this.data[i].slice(0,cix) );
+    B.data.push( this.data[i].slice(cix) );
   }
   return [A,B];
 };
@@ -1007,8 +1016,8 @@ Matrix.prototype.insertColumn = function(/*arary*/ vect, /*uint*/ ci) {
       ci += sA[1];
     }
   }
-  for(var i in this.rows) { 
-    this.rows[i].splice(ci,vect[i]);
+  for(var i in this.data) { 
+    this.data[i].splice(ci,vect[i]);
   }
   return this;
 };
@@ -1024,8 +1033,8 @@ Matrix.prototype.removeColumn = function(ci) {
     }
   }
   var v = [];
-  for(var i in this.rows) { 
-    v.push(this.rows[i].splice(ci,1));
+  for(var i in this.data) { 
+    v.push(this.data[i].splice(ci,1));
   }
   return this;
 };
@@ -1040,7 +1049,7 @@ Matrix.prototype.sparse = function() {
 
   for(var r=0,c=0,nr=sA[0],nc=sA[1]; r<nr; r++) { 
     for(c=0; c<nc; c++) {
-      if( this.rows[r][c] ) { 
+      if( this.data[r][c] ) { 
         coords.push([r,c]);
       }
     }
@@ -1053,7 +1062,7 @@ Matrix.prototype.sparse = function() {
  * Return array of [num rows,num cols]
  */
 Matrix.prototype.size = function() {     
-  return [this.rows.length,(this.rows.length>0)?this.rows[0].length:0];
+  return [this.data.length,(this.data.length>0)?this.data[0].length:0];
 };
 
 
@@ -1065,12 +1074,10 @@ Matrix.prototype.size = function() {
 
 
 /** DEBUG **/
-var A = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
-var B = Matrix.pow(A,3).add(42);
-//console.log(A);
+var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
+var B = Matrix.random(M).add(-0.5);
 console.log(B);
 process.exit();
-var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
 var inv = M.pinv();
 console.log(inv);
 //var SVD = M.svd();
