@@ -72,15 +72,31 @@ Matrix.prototype.each = function(/*function(v,i,j)*/ cb) {
 Matrix.abs = function(/*Matrix|number*/ A) {
   return (Matrix.isMatrix(A)) ? A.map(Math.abs) : Math.abs(A);
 };
+Matrix.prototype.abs = function() { 
+  return this.map(Math.abs);
+};
+
 Matrix.acos = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.acos) : Math.acos(A);
 };
+Matrix.prototype.acos = function() { 
+  return this.map(Math.acos);
+};
+
 Matrix.asin = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.asin) : Math.asin(A);
 };
+Matrix.prototype.asin = function() { 
+  return this.map(Math.asin);
+};
+
 Matrix.atan = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.atan) : Math.atan(A);
 };
+Matrix.prototype.atan = function() { 
+  return this.map(Math.atan);
+};
+
 Matrix.atan2 = function(/*Matrix|number*/ A, /*Matrix|number*/ B) { 
   if( !Matrix.isMatrix(A) ) { 
     if( !Matrix.isMatrix(B) ) { 
@@ -92,20 +108,46 @@ Matrix.atan2 = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
   }
   return A.each(function(v,i,j) { return Math.atan2(v,B.data[i][j]); });
 };
+Matrix.prototype.atan2 = function(/*Matrix|number*/ B) { 
+  if( !Matrix.isMatrix(B) ) { 
+    B = new Matrix(this.size(),B);
+  }
+  return this.each(function(v,i,j) { return Math.atan2(v,B.data[i][j]); });
+};
+
 Matrix.ceil = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.ceil) : Math.ceil(A);
 };
+Matrix.prototype.ceil = function() { 
+  return this.map(Math.ceil);
+};
+
 Matrix.cos = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.cos) : Math.cos(A);
 };
+Matrix.prototype.ceil = function() { 
+  return this.map(Math.ceil);
+};
+
 Matrix.exp = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.exp) : Math.exp(A);
 };
+Matrix.prototype.ceil = function() { 
+  return this.map(Math.ceil);
+};
+
 Matrix.floor = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.floor) : Math.floor(A);
 };
+Matrix.prototype.floor = function() { 
+  return this.map(Math.floor);
+};
+
 Matrix.log = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.log) : Math.log(A);
+};
+Matrix.prototype.log = function() { 
+  return this.map(Math.log);
 };
 
 Matrix.max = function(/*Matrix|number*/ A) { 
@@ -153,6 +195,9 @@ Matrix.prototype.pow = function(/*Matrix|number*/ B) {
 Matrix.random = function(/*Matrix|number*/ A) {
   return (Matrix.isMatrix(A)) ? A.map(Math.random) : Math.random(A);
 };
+Matrix.prototype.random = function() { 
+  return this.map(Math.random);
+};
 
 Matrix.round = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.round) : Math.round(A);
@@ -164,12 +209,24 @@ Matrix.prototype.round = function() {
 Matrix.sin = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.sin) : Math.sin(A);
 };
+Matrix.prototype.sin = function() { 
+  return this.map(Math.sin);
+};
+
 Matrix.sqrt = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.sqrt) : Math.sqrt(A);
 };
+Matrix.prototype.sqrt = function() { 
+  return this.map(Math.sqrt);
+};
+
 Matrix.tan = function(/*Matrix|number*/ A) { 
   return (Matrix.isMatrix(A)) ? A.map(Math.tan) : Math.tan(A);
 };
+Matrix.prototype.tan = function() { 
+  return this.map(Math.tan);
+};
+
 
 Matrix.prototype.roundoff = function(ep) {
   return this.each(function(v,i,j) { 
