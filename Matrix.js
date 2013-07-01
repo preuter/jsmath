@@ -1,12 +1,14 @@
 /**
+ * Matrix manipulation in Javascript.
+ *
  * @file Matrix.js
- * @date 2013-06-26 13:37 PDT
+ * @date 2013-07-01 11:05 PDT
  * @author Paul Reuter
- * @version 0.9.0
+ * @version 1.0.0
  *
  * @modifications
  * 0.9.0 - 2013-06-26 - Written but undergoing debugging.
- * 1.0.0 - 2013-06-26 - First release
+ * 1.0.0 - 2013-07-01 - First release
  */
 
 
@@ -341,7 +343,7 @@ Matrix.isMatrix = function(/*Matrix*/ B) {
 
 
 Matrix.prototype.replace = function(f,r) {
-  var A = new Matrix(A);
+  var A = new Matrix(this);
   var sA = A.size();
   for(var i=0,j=0,ni=sA[0],nj=sA[1]; i<ni; i++) { 
     for(j=0; j<nj; j++) { 
@@ -1167,14 +1169,5 @@ Matrix.prototype.size = function() {
   return [this.data.length,(this.data.length>0)?this.data[0].length:0];
 };
 
-
-
-
-/** DEBUG **/
-
-var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
-var N = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
-console.log(M.div(N).find(Math.NaN).sparse());
-process.exit();
 
 // EOF -- Matrix.js
