@@ -633,6 +633,9 @@ Matrix.prototype.diag = function() {
 };
 
 
+/**
+ * Compute the inverse of a square matrix.
+ */
 Matrix.prototype.inv = function() {
   var sA = this.size();
   if( sA[0]!=sA[1] ) {
@@ -647,6 +650,9 @@ Matrix.prototype.inv = function() {
 };
 
 
+/**
+ * Reduce a matrix to row-echelon form
+ */
 Matrix.prototype.reduce = function() { 
   var B = new Matrix(this);
   var sB = this.size();
@@ -697,6 +703,14 @@ Matrix.prototype.reduce = function() {
 };
 
 
+/**
+ * Compute the singular value decomposition of a matrix.
+ * Used for computing pseudo-inverse.
+ * @return [U,w,V] parameters.
+ *
+ * @link http://en.wikipedia.org/wiki/Singular_value_decomposition
+ * @link http://3map.snu.ac.kr/courses/2005/advance/c2-6.pdf
+ */
 Matrix.prototype.svd = function() {
 // Adopted from Numerical Recipes
 // Alternate code available at: 
@@ -796,7 +810,6 @@ Matrix.prototype.svd = function() {
   }
 
   // accumulation of right-hand transformations
-//  for(i=n; i>=1; i--) { 
   for(i=n-1; i>=0; i--) { 
     if( i<n-1 ) { 
       if( g ) { 
@@ -948,12 +961,18 @@ Matrix.prototype.svd = function() {
 };
 
 
+/**
+ * Compute the pseudo-inverse of a matrix. More resilient than inv().
+ */
 Matrix.prototype.pinv = function() { 
   var uwv = this.svd();
   return uwv[2].cross(Matrix.diag(uwv[1]).pow(-1).T()).cross(uwv[0].T());
 };
 
 
+/**
+ * TBD
+ */
 Matrix.prototype.solve = function(b) { 
   // TODO: verify || optimize
   return (this.T().cross(this)).pinv().cross(this.T().cross(new Matrix([b])));
@@ -977,6 +996,9 @@ Matrix.prototype.get = function(/*uint*/ ri, /*uint*/ ci) {
 };
 
 
+/**
+ * Set a [row][col] to a specific value.
+ */
 Matrix.prototype.set = function(/*uint*/ ri, /*uint*/ ci,/*value*/ v) {
   var sA = this.size();
   if( sA[0] <= ri || sA[1] <= ci ) { 
@@ -987,11 +1009,17 @@ Matrix.prototype.set = function(/*uint*/ ri, /*uint*/ ci,/*value*/ v) {
 };
 
 
+/**
+ * Get a copy of row by row index.
+ */
 Matrix.prototype.row = function(/*uint*/ rix) {
   return this.data[rix].slice(0);
 };
 
 
+/**
+ * Get a copy of a column by column index.
+ */
 Matrix.prototype.col = function(/*uint*/ cix) {
   var arr = [];
   for(var i in this.data) { 
@@ -1001,6 +1029,9 @@ Matrix.prototype.col = function(/*uint*/ cix) {
 };
 
 
+/**
+ * Method to output as string.
+ */
 Matrix.prototype.toString = function() {
   return '('+this.size().join(',')+'): '+
     '['+this.data.map(function(v) { return '['+v.join(',')+']'; })+']';
@@ -1008,6 +1039,7 @@ Matrix.prototype.toString = function() {
 
 
 /**
+ * Insert row at index, or append by default.
  * @param {array} row An array to insert before ri
  * @param {uint} ri Row index to insert row before.
  */
@@ -1029,6 +1061,9 @@ Matrix.prototype.insertRow = function(/*array*/ row,/*uint*/ ri) {
 };
 
 
+/**
+ * Remove row from matrix, or pop (remove last).
+ */
 Matrix.prototype.removeRow = function(/*uint*/ ri) {
   var sA = this.size();
   if( typeof(ri) === 'undefined' || sA[0] < ri ) { 
@@ -1043,6 +1078,9 @@ Matrix.prototype.removeRow = function(/*uint*/ ri) {
 };
 
 
+/**
+ * Join another matrix to the end of the current matrix vertically.
+ */
 Matrix.prototype.vcat = function(/*Matrix*/ m) {
 // TODO: support multiple Matricies as arguments.
   if( Matrix.isMatrix(m) ) {
@@ -1071,6 +1109,9 @@ Matrix.prototype.vcat = function(/*Matrix*/ m) {
 };
 
 
+/**
+ * Split a matrix into 2 parts: top and bottom.
+ */
 Matrix.prototype.vsplit = function(/*uint*/ rix) {
 // TODO: support multiple indicies as arguments.
   var A = new Matrix(), B = new Matrix();
@@ -1085,6 +1126,9 @@ Matrix.prototype.vsplit = function(/*uint*/ rix) {
 };
 
 
+/**
+ * Join another matrix to the end of the current matrix horizontally.
+ */
 Matrix.prototype.hcat = function(/*Matrix*/ m) {
 // TODO: support multiple Matricies as arguments.
   if( Matrix.isMatrix(m) ) { 
@@ -1112,6 +1156,9 @@ Matrix.prototype.hcat = function(/*Matrix*/ m) {
 };
 
 
+/**
+ * Split a matrix into 2 parts: left and right
+ */
 Matrix.prototype.hsplit = function(/*uint*/ cix) {
 // TODO: support multiple indicies as arguments.
   var A = new Matrix(), B = new Matrix();
@@ -1125,6 +1172,7 @@ Matrix.prototype.hsplit = function(/*uint*/ cix) {
 
 
 /**
+ * Insert a column vector at index. Default appends column.
  * @param {array} vect A column vector of values to insert before column ci.
  * @param {uint} ci Column index to insert values before.
  */
@@ -1144,6 +1192,9 @@ Matrix.prototype.insertColumn = function(/*arary*/ vect, /*uint*/ ci) {
 };
 
 
+/**
+ * Remove a column from Matrix, specified by ci. Default removes last column.
+ */
 Matrix.prototype.removeColumn = function(ci) {
   var sA = this.size();
   if( typeof(ci) === 'undefined' || sA[1] < ci ) { 
@@ -1162,7 +1213,7 @@ Matrix.prototype.removeColumn = function(ci) {
 
 
 /**
- * return array of coordinates of [row,col] of non-empty entries.
+ * Return array of coordinates of [row,col] of non-empty entries.
  */
 Matrix.prototype.sparse = function() {
   var coords = [];
