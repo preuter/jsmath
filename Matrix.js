@@ -231,9 +231,13 @@ Matrix.prototype.tan = function() {
 
 
 Matrix.prototype.roundoff = function(ep) {
+  ep = ep || 0.0000001;
+  var scale = Math.pow(10,Math.max(0,-(Math.log(ep)/Math.log(10))));
   return this.each(function(v,i,j) { 
-    var va = Math.round(v);
-    return (Matrix.isZero(va-v,ep)) ? va : v;
+    if( Matrix.isZero(v*scale-Math.round(v*scale)) ) { 
+      return Math.round(v*scale)/scale;
+    }
+    return v;
   });
 };
 
