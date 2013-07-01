@@ -1023,6 +1023,49 @@ Matrix.prototype.removeRow = function(/*uint*/ ri) {
   return this;
 };
 
+
+Matrix.prototype.vcat = function(/*Matrix*/ m) {
+// TODO: support multiple Matricies as arguments.
+  if( Matrix.isMatrix(m) ) {
+    m = m.get();
+  }
+  if( !Array.isArray(m) || m.length < 1 || !Array.isArray(m[0]) ) {
+    return new Matrix(this);
+  }
+  var sA = this.size();
+  var sB = [m.length,m[0].length];
+
+  var C = new Matrix(sA[0]+sB[0],Math.max(sA[1],sB[1]),0);
+
+  for(var i=0,ni=sA[0],nj=sA[1]; i<ni; i++) { 
+    for(var j=0; j<nj; j++) { 
+      C.data[i][j] = this.data[i][j];
+    }
+  }
+  var nr = sA[0];
+  for(var i=0,ni=sB[0],nj=sB[1]; i<ni; i++) { 
+    for(var j=0; j<nj; j++) { 
+      C.data[nr+i][j] = m[i][j];
+    }
+  }
+  return C;
+};
+
+
+Matrix.prototype.vsplit = function(/*uint*/ rix) {
+// TODO: support multiple indicies as arguments.
+  var A = new Matrix(), B = new Matrix();
+  var sA = this.size();
+  for(var i=0,ni=Math.min(sA[0],rix); i<ni; i++) { 
+    A.data.push( this.data[i].slice(0) );
+  }
+  for(var i=rix,ni=sA[0]; i<ni; i++) { 
+    B.data.push( this.data[i].slice(0) );
+  }
+  return [A,B];
+};
+
+
 Matrix.prototype.hcat = function(/*Matrix*/ m) {
 // TODO: support multiple Matricies as arguments.
   if( Matrix.isMatrix(m) ) { 
@@ -1126,5 +1169,12 @@ Matrix.prototype.size = function() {
 
 
 
+
+/** DEBUG **/
+
+var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
+var N = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
+console.log(M.div(N).find(Math.NaN).sparse());
+process.exit();
 
 // EOF -- Matrix.js
