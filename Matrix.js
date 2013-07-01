@@ -679,7 +679,9 @@ Matrix.prototype.reduce = function() {
 
 
 Matrix.prototype.svd = function() {
-// From Numerical Recipes
+// Adopted from Numerical Recipes
+// Alternate code available at: 
+//   http://www.public.iastate.edu/~dicook/JSS/paper/code/svd.c
   var sA = this.size(), m = sA[0], n = sA[1],
       U = new Matrix(this),
       w = Matrix.Vector(n),
@@ -699,10 +701,13 @@ Matrix.prototype.svd = function() {
   var a = U.data, // pointer to destination U (also input)
       v = V.data; // pointer to destination V
 
-  var flag,i,its,j,jj,k,l,mn;
+  var flag,i,its,j,jj,k,l,nm;
   var anorm,c,f,g,h,s,scale,x,y,z;
   
-  var rv1 = Matrix.Vector(1+n);
+//  var rv1 = Matrix.Vector(1+n);
+  var rv1 = Matrix.Vector(n);
+
+  // Householder reduction to bidiagonal form
   g = scale = anorm = 0.0;
 //  for(i=1; i<=n; i++) { 
   for(i=0; i<n; i++) { 
@@ -725,8 +730,8 @@ Matrix.prototype.svd = function() {
         g = -SIGN(Math.sqrt(s),f);
         h = f*g - s;
         a[i][i] = f - g;
-//        for(j=1; j<=n; j++) { 
-        for(j=0; j<n; j++) { 
+//        for(j=l; j<=n; j++) { 
+        for(j=l; j<n; j++) { 
 //          for(s=0.0,k=i; k<=m; k++) {
           for(s=0.0,k=i; k<m; k++) {
             s += a[k][i]*a[k][j];
@@ -744,6 +749,8 @@ Matrix.prototype.svd = function() {
       }
     }
     w[i] = scale * g;
+
+    // right hand reduction
     g = s = scale = 0.0;
 //    if( i<=m && i!=n ) { 
     if( i<m && i!=n-1 ) { 
@@ -793,7 +800,7 @@ Matrix.prototype.svd = function() {
       if( g ) { 
 //        for(j=l; j<=n; j++) { // double division to avoid underflow.
         for(j=l; j<n; j++) { // double division to avoid underflow.
-          v[j][i] = (a[i][j]/a[i][l])/g;
+          v[j][i] = (a[i][j]/a[i][l]) / g;
         }
 //        for(j=l; j<=n; j++) { 
         for(j=l; j<n; j++) { 
@@ -809,7 +816,7 @@ Matrix.prototype.svd = function() {
       }
 //      for(j=l; j<=n; j++) { 
       for(j=l; j<n; j++) { 
-        v[i][j] = v[j][i]=0.0;
+        v[i][j] = v[j][i] = 0.0;
       }
     }
     v[i][i] = 1.0;
@@ -819,7 +826,7 @@ Matrix.prototype.svd = function() {
 
   // Accumulation of left-hand transformations.
 //  for(i=IMIN(m,n); i>=1; i--) {
-  for(i=IMIN(m,n)-1; i>=0; i--) {
+  for(i=IMIN(m-1,n-1); i>=0; i--) {
     l = i+1;
     g = w[i];
 //    for(j=l; j<=n; j++) {
@@ -853,13 +860,14 @@ Matrix.prototype.svd = function() {
     ++a[i][i];
   }
   
+
 //  for(k=n; k>=1; k--) { // Diagonalization of the bidiagonal form: Loop over
   for(k=n-1; k>=0; k--) { // Diagonalization of the bidiagonal form: Loop over
     for(its=1; its<=30; its++) {   // singular values, and over allowed iterations.
       flag = 1;
 //      for(l=k; l>=1; l--) { // test for splitting.
       for(l=k; l>=0; l--) { // test for splitting.
-        nm = l-1;   // Note that rv1[1] is always zero.
+        nm = l-1;   // Note that rv1[0] is always zero.
         if( (Math.abs(rv1[l])+anorm) == anorm ) { 
           flag = 0;
           break;
@@ -867,7 +875,7 @@ Matrix.prototype.svd = function() {
         if( (Math.abs(w[nm])+anorm) == anorm ) break;
       }
       if( flag ) { 
-        c = 0.0; // Cancellation of rv1[1], if l > 1.
+        c = 0.0; // Cancellation of rv1[1], if l > 0.
         s = 1.0;
         for(i=l; i<=k; i++) { 
           f = s*rv1[i];
@@ -880,7 +888,7 @@ Matrix.prototype.svd = function() {
           c = g*h;
           s = -f*h;
 //          for(j=1; j<=m; j++) { 
-          for(j=1; j<m; j++) { 
+          for(j=0; j<m; j++) { 
             y = a[j][nm];
             z = a[j][i];
             a[j][nm] = y*c + z*s;
@@ -1158,16 +1166,36 @@ Matrix.prototype.size = function() {
 
 
 /** DEBUG **/
-var M = new Matrix([ [1,0,0,2],[4,0,3,1],[4,0,1,0],[3,4,1,7] ]);
-console.log(M.inv().format(3));
-console.log(M.pinv().format(3));
+
+var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
+var svd = M.svd();
+console.log(svd[0]);
+console.log(svd[1]);
+console.log(svd[2]);
+console.log('...');
+console.log('pINV:');
+console.log(M.pinv());
+console.log('...');
+//process.exit();
+
+console.log('U*W*V\'');
+console.log(svd[0].cross(Matrix.diag(svd[1])).cross(svd[2].T()));
+console.log('original');
+console.log(M);
 process.exit();
+
 var M = new Matrix([ [1,0,0,0,2],[0,0,3,0,0],[0,0,0,0,0],[0,4,0,0,0] ]);
 console.log(M.inv());
 console.log(M.pinv());
 process.exit();
+
 var svd = M.svd();
 console.log(svd[0].roundoff());
 console.log(Matrix.diag(svd[1]));
 console.log(svd[2]);
+process.exit();
+
+var M = new Matrix([ [1,0,0,2],[4,0,3,1],[4,0,1,0],[3,4,1,7] ]);
+console.log(M.inv().format(3));
+console.log(M.pinv().format(3));
 
