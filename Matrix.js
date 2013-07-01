@@ -154,22 +154,30 @@ Matrix.prototype.log = function() {
 
 Matrix.max = function(/*Matrix|number*/ A) { 
   if( Matrix.isMatrix(A) ) {
-    return Math.max.apply(Math,A.data.slice(0).map(function(r) { return Math.max.apply(Math,r); }));
+    return Math.max.apply(Math,A.data.slice(0).map(function(r) { 
+      return Math.max.apply(Math,r);
+    }));
   }
   return Math.max.apply(Math,Array.prototype.slice.call(arguments));
 };
 Matrix.prototype.max = function() { 
-  return Math.max.apply(Math,this.data.slice(0).map(function(r) { return Math.max.apply(Math,r); }));
+  return Math.max.apply(Math,this.data.slice(0).map(function(r) {
+    return Math.max.apply(Math,r);
+  }));
 };
 
 Matrix.min = function(/*Matrix|number*/ A) { 
   if( Matrix.isMatrix(A) ) { 
-    return Math.min.apply(Math,A.data.slice(0).map(function(r) { return Math.min.apply(Math,r); }));
+    return Math.min.apply(Math,A.data.slice(0).map(function(r) {
+      return Math.min.apply(Math,r);
+    }));
   }
   return Math.min.apply(Math,Array.prototype.slice.call(arguments));
 };
 Matrix.prototype.min = function() { 
-  return Math.min.apply(Math,this.data.slice(0).map(function(r) { return Math.min.apply(Math,r); }));
+  return Math.min.apply(Math,this.data.slice(0).map(function(r) {
+    return Math.min.apply(Math,r);
+  }));
 };
 
 Matrix.pow = function(/*Matrix|number*/ A, /*Matrix|number*/ B) {
@@ -366,7 +374,8 @@ Matrix.prototype.replace = function(f,r) {
  * OR: Init a matrix with another matrix. m is Matrix, n & v undef
  * OR: Init a matrix by a column vector.  m is array, n & v undef
  */
-Matrix.prototype.init = function(/*Matrix|array|uint*/ m, /*uint|value*/ n, /*value*/ v) {
+Matrix.prototype.init = function(
+/*Matrix|array|uint*/ m, /*uint|value*/ n, /*value*/ v) {
 
   if( typeof(v) === 'undefined' ) { 
     if( typeof(n) === 'undefined' ) { 
@@ -552,7 +561,11 @@ Matrix.prototype.div = function(/*Matrix*/ B) {
   var C = new Matrix(this);
   for(var i=0, ni=sA[0]; i<ni; i++) { 
     for(var j=0, nj=sA[1]; j<nj; j++) {
-      C.data[i][j] = (Matrix.isZero(B.data[i][j])) ? Matrix.NaN : C.data[i][j]/B.data[i][j];
+      if( Matrix.isZero(B.data[i][j]) ) { 
+        C.data[i][j] = Matrix.NaN;
+      } else { 
+        C.data[i][j] /= B.data[i][j];
+      }
     }
   }
   return C;
@@ -839,7 +852,7 @@ Matrix.prototype.svd = function() {
   
 
   for(k=n-1; k>=0; k--) { // Diagonalization of the bidiagonal form: Loop over
-    for(its=1; its<=30; its++) {   // singular values, and over allowed iterations.
+    for(its=1; its<=30; its++) {   // singular values, and over allowed iters.
       flag = 1;
       for(l=k; l>=0; l--) { // test for splitting.
         nm = l-1;   // Note that rv1[0] is always zero.
